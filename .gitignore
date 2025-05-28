@@ -72,3 +72,9 @@ crashlytics-build.properties
 # Temporary auto-generated Android Assets
 /[Aa]ssets/[Ss]treamingAssets/aa.meta
 /[Aa]ssets/[Ss]treamingAssets/aa/*
+
+# Firebase packages
+/Assets/ExternalDependencyManager/
+/Assets/Editor*Default*Resources/
+/Assets/Firebase/
+/Assets/Plugins/
