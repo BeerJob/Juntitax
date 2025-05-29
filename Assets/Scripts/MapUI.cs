@@ -4,13 +4,16 @@ using Firebase;
 using Firebase.Firestore;
 using Firebase.Extensions;
 using System.Collections.Generic;
+using UnityEngine.EventSystems;
 
-public class MapUI : MonoBehaviour
+public class MapUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
     public GameObject map;
     public GameObject itemContainer;
     public GameObject pinPrefab;
     public GameObject itemPrefab;
+    public GameObject hour;
+    public float initialTime = 762;
     private Color[] colors = new Color[]
     {
         Color.red, Color.green, Color.blue, Color.yellow, Color.cyan,
@@ -20,8 +23,8 @@ public class MapUI : MonoBehaviour
     void Start()
     {
         ConstructElement(new Vector3(100, 150, 0), "Item 1");
-        ConstructElement(new Vector3(-200, -300, 0), "Item 2");
-        ConstructElement(new Vector3(-50, 200, 0), "Item 3");
+        //ConstructElement(new Vector3(-200, -300, 0), "Item 2");
+        //ConstructElement(new Vector3(-50, 200, 0), "Item 3");
 
         FirebaseApp.CheckAndFixDependenciesAsync().ContinueWithOnMainThread(task =>
         {
@@ -41,7 +44,13 @@ public class MapUI : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-
+        if (hour)
+        {
+            initialTime += Time.deltaTime;
+            int hours = Mathf.FloorToInt(initialTime / 60);
+            int minutes = Mathf.FloorToInt(initialTime % 60);
+            hour.GetComponent<Text>().text = string.Format("{0:D2}:{1:D2}", hours, minutes);
+        }
     }
 
     void ConstructElement(Vector3 position, string label = "Evento sin nombre", string owner = "Dueño desconocido", string location = "Sin sala")
@@ -132,5 +141,4 @@ public class MapUI : MonoBehaviour
 
         return new Vector3(x, y, 0);
     }
-
 }
