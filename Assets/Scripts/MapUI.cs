@@ -6,7 +6,7 @@ using Firebase.Extensions;
 using System.Collections.Generic;
 using UnityEngine.EventSystems;
 
-public class MapUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+public class MapUI : MonoBehaviour
 {
     public GameObject map;
     public GameObject itemContainer;
