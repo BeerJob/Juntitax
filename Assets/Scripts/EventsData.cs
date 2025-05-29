@@ -11,7 +11,7 @@ public struct EventsData
     public string Location_event {get; set;}
 
     [FirestoreProperty]
-    public string Locgeo_event {get; set;}
+    public GeoPoint Locgeo_event {get; set;}
 
     [FirestoreProperty]
     public string[] Created_event {get; set;}
