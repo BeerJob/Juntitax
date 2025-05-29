@@ -1,11 +1,10 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using Firebase;
 using Firebase.Firestore;
 using Firebase.Extensions;
-using Unity.VisualScripting;
+using System.Collections.Generic;
+using UnityEngine.EventSystems;
 
 public class MapUI : MonoBehaviour
 {
@@ -13,11 +12,19 @@ public class MapUI : MonoBehaviour
     public GameObject itemContainer;
     public GameObject pinPrefab;
     public GameObject itemPrefab;
+    public GameObject hour;
+    public float initialTime = 762;
+    private Color[] colors = new Color[]
+    {
+        Color.red, Color.green, Color.blue, Color.yellow, Color.cyan,
+        new Color(1f, 0.5f, 0f), new Color(0.5f, 0f, 1f), new Color(0.5f, 1f, 0.5f)
+    };
+    private int currentColorIndex = 0;
     void Start()
     {
-        ConstructElement(new Vector3(100, 150, 0), "Item 1", Color.red);
-        ConstructElement(new Vector3(-200, -300, 0), "Item 2", Color.green);
-        ConstructElement(new Vector3(-50, 200, 0), "Item 3", Color.blue);
+        ConstructElement(new Vector3(100, 150, 0), "Item 1");
+        //ConstructElement(new Vector3(-200, -300, 0), "Item 2");
+        //ConstructElement(new Vector3(-50, 200, 0), "Item 3");
 
         FirebaseApp.CheckAndFixDependenciesAsync().ContinueWithOnMainThread(task =>
         {
@@ -37,15 +44,26 @@ public class MapUI : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-
+        if (hour)
+        {
+            initialTime += Time.deltaTime;
+            int hours = Mathf.FloorToInt(initialTime / 60);
+            int minutes = Mathf.FloorToInt(initialTime % 60);
+            hour.GetComponent<Text>().text = string.Format("{0:D2}:{1:D2}", hours, minutes);
+        }
     }
 
-    void ConstructElement(Vector3 position, string label, Color color)
+    void ConstructElement(Vector3 position, string label = "Evento sin nombre", string owner = "Dueño desconocido", string location = "Sin sala")
     {
+        Color color = colors[currentColorIndex];
+        currentColorIndex = (currentColorIndex + 1) % colors.Length;
+
         GameObject item = Instantiate(itemPrefab, position, Quaternion.identity);
         item.transform.SetParent(itemContainer.transform, false);
-        item.GetComponentInChildren<Text>().text = label;
-        item.GetComponent<Image>().color = color;
+        item.transform.GetChild(0).GetComponent<Text>().text = label;
+        item.transform.GetChild(1).GetComponent<Text>().text = location;
+        item.transform.GetChild(2).GetComponent<Text>().text = owner;
+        item.transform.GetChild(3).GetComponent<Image>().color = color;
 
         GameObject pin = Instantiate(pinPrefab, position, Quaternion.identity);
         pin.transform.SetParent(map.transform, false);
@@ -53,11 +71,12 @@ public class MapUI : MonoBehaviour
         pin.GetComponent<Image>().color = color;
     }
 
+
     void ObtenerEventos()
     {
         FirebaseFirestore db = FirebaseFirestore.DefaultInstance;
 
-        db.Collection("TestEventos").GetSnapshotAsync().ContinueWithOnMainThread(task =>
+        db.Collection("Eventos").GetSnapshotAsync().ContinueWithOnMainThread(task =>
         {
             if (task.IsFaulted)
             {
@@ -68,13 +87,58 @@ public class MapUI : MonoBehaviour
             QuerySnapshot snapshot = task.Result;
             foreach (DocumentSnapshot document in snapshot.Documents)
             {
-                Debug.Log($"Documento ID: {document.Id}");
-                Dictionary<string, object> data = document.ToDictionary();
-                float point;
-                //Debug.Log("Position:" + float.TryParse(data["punto"], out point));
+                var data = document.ToDictionary();
 
-                //ConstructElement(new Vector3);
+                // Obtener nombre
+                string nombre = data.ContainsKey("name_event") ? data["name_event"].ToString() : "Evento sin nombre";
+
+                // Obtener punto (GeoPoint)
+                Vector3 position = Vector3.zero;
+                if (data.ContainsKey("locgeo_event"))
+                {
+                    GeoPoint geo = (GeoPoint)data["locgeo_event"];
+
+                    position = GeoToMapPosition(geo.Latitude, geo.Longitude);
+                }
+
+                //Obtener dueño (string[0])
+                string dueño = "Dueño: desconocido";
+                if (data.ContainsKey("created_event"))
+                {
+                    List<object> createdEvent = data["created_event"] as List<object>;
+                    if (createdEvent != null && createdEvent.Count > 0)
+                    {
+                        dueño = createdEvent[0].ToString();
+                    }
+                }
+
+                //Obtener locación (string)
+                string locacion = data.ContainsKey("location_event") ? data["location_event"].ToString() : "Sin sala";
+
+                Debug.Log($"Evento: {nombre}, Dueño: {dueño}, Ubicación: {locacion}, Posición: {position}");
+                ConstructElement(position, nombre, dueño, locacion);
             }
         });
+    }
+    Vector3 GeoToMapPosition(double lat, double lng)
+    {
+        // Define el rango de tu mapa en lat/lng
+        double minLat = -90;
+        double maxLat = 90;
+        double minLng = -180;
+        double maxLng = 180;
+
+        float mapWidth = 1000f;
+        float mapHeight = 1000f;
+
+        // Normalizar lat/lng entre 0 y 1
+        float xNorm = (float)((lng - minLng) / (maxLng - minLng));
+        float yNorm = (float)((lat - minLat) / (maxLat - minLat));
+
+        // Escalar a las dimensiones del mapa
+        float x = xNorm * mapWidth - mapWidth / 2f;
+        float y = yNorm * mapHeight - mapHeight / 2f;
+
+        return new Vector3(x, y, 0);
     }
 }
