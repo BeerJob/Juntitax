@@ -22,7 +22,7 @@ public class MapUI : MonoBehaviour
     private int currentColorIndex = 0;
     void Start()
     {
-        ConstructElement(new Vector3(100, 150, 0), "Item 1");
+        //ConstructElement(new Vector3(100, 150, 0), "Item 1");
         //ConstructElement(new Vector3(-200, -300, 0), "Item 2");
         //ConstructElement(new Vector3(-50, 200, 0), "Item 3");
 
@@ -32,7 +32,7 @@ public class MapUI : MonoBehaviour
             if (dependencyStatus == DependencyStatus.Available)
             {
                 Debug.Log("Firebase está listo.");
-                ObtenerEventos();
+                GetEvents();
             }
             else
             {
@@ -72,7 +72,7 @@ public class MapUI : MonoBehaviour
     }
 
 
-    void ObtenerEventos()
+    void GetEvents()
     {
         FirebaseFirestore db = FirebaseFirestore.DefaultInstance;
 
@@ -122,7 +122,7 @@ public class MapUI : MonoBehaviour
     }
     Vector3 GeoToMapPosition(double lat, double lng)
     {
-        // Define el rango de tu mapa en lat/lng
+        // Limites del mapa
         double minLat = -90;
         double maxLat = 90;
         double minLng = -180;
