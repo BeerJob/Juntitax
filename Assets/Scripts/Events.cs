@@ -22,6 +22,7 @@ public class Events : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        /*
         _createButton.onClick.AddListener(() =>
         {
             var eventData = new EventsData
@@ -36,6 +37,7 @@ public class Events : MonoBehaviour
             var firestore = FirebaseFirestore.DefaultInstance;
             firestore.Collection(_eventPath).AddAsync(eventData);
         });
+        */
     }
 
     // Update is called once per frame
