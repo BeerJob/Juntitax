@@ -25,50 +25,6 @@ public class BD : MonoBehaviour
             Destroy(gameObject);
         }
     }
-    void Start()
-    {
-        FirebaseApp.CheckAndFixDependenciesAsync().ContinueWithOnMainThread(task =>
-        {
-            var dependencyStatus = task.Result;
-            if (dependencyStatus == DependencyStatus.Available)
-            {
-                Debug.Log("Firebase está listo.");
-                db = FirebaseFirestore.DefaultInstance;
-                isConnected = true;
-                EventsData eventData = new EventsData
-                {
-                    id_event = "1",
-                    name_event = "Evento de prueba",
-                    location_event = "Ubicación de prueba",
-                    locgeo_event = new GeoPoint(37.7749, -122.4194),
-                    created_event = DateTime.Now,
-                    date_event = DateTime.Now,
-                };
-                CreateEvent(eventData, OnCreate);
-            }
-            else
-            {
-                Debug.LogError("No se pudo resolver todas las dependencias de Firebase: " + dependencyStatus);
-            }
-        });
-        ;
-    }
-    void OnCreate(bool status)
-    {
-        ReadEvent("Evento de prueba", OnRead);
-    }
-    void OnRead(EventsData data, bool status)
-    {
-        if (status)
-        {
-            Debug.Log("Evento leído correctamente: " + data.id_event);
-        }
-        else
-        {
-            Debug.LogError("Error al leer el evento.");
-        }
-    }
-
     public bool IsConnected() => isConnected;
 
     public FirebaseFirestore GetDatabase()
