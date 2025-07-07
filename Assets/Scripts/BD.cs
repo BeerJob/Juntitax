@@ -19,6 +19,20 @@ public class BD : MonoBehaviour
         {
             instance = this;
             DontDestroyOnLoad(gameObject);
+            FirebaseApp.CheckAndFixDependenciesAsync().ContinueWithOnMainThread(task =>
+            {
+                var dependencyStatus = task.Result;
+                if (dependencyStatus == DependencyStatus.Available)
+                {
+                    Debug.Log("Firebase está listo.");
+                    db = FirebaseFirestore.DefaultInstance;
+                    isConnected = true;
+                }
+                else
+                {
+                    Debug.LogError("No se pudo resolver todas las dependencias de Firebase: " + dependencyStatus);
+                }
+            });
         }
         else
         {
