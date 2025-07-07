@@ -440,23 +440,17 @@ public class BD : MonoBehaviour
             return;
         }
 
-        db.Collection("Participaciones").WhereEqualTo("id_user", id_user).GetSnapshotAsync().ContinueWithOnMainThread(task =>
+        db.Collection("Eventos").WhereEqualTo("id_organizer", id_user).GetSnapshotAsync().ContinueWithOnMainThread(task =>
         {
             if (task.IsCompleted && !task.IsFaulted)
             {
-                List<EventsData> userEventsList = new List<EventsData>();
+                List<EventsData> eventsList = new List<EventsData>();
                 foreach (DocumentSnapshot document in task.Result.Documents)
                 {
-                    ParticipantionsData participationData = document.ConvertTo<ParticipantionsData>();
-                    ReadEvent(participationData.id_event, (eventData, status) =>
-                    {
-                        if (status)
-                        {
-                            userEventsList.Add(eventData);
-                        }
-                    });
+                    EventsData eventData = document.ConvertTo<EventsData>();
+                    eventsList.Add(eventData);
                 }
-                callback(userEventsList, true);
+                callback(eventsList, true);
             }
             else
             {
